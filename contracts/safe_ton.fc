@@ -1,5 +1,6 @@
 #include "imports/stdlib.fc";
-
+#include "op_codes.fc";
+#include "params.fc";
 
 const int const::subscr = 1000000000;
 int op::get_royalty_params() asm "0x693d3950 PUSHINT";
