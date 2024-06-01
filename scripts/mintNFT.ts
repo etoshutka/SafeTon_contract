@@ -5,7 +5,7 @@ import qs from 'qs';
 import qrcode from 'qrcode-terminal';
 
 const OWNER_ADDRESS: string = 'UQDlyGIved5xvnBXLxTeUs0ZN2q-2UafjwYVr9dHz5ElURpi';
-const CONTRACT_ADDRESS: string = 'kQCHflQQNKpvpyO_0BYCKh_Z68tdjhHKECozXlYwtaGWYEkc';
+const CONTRACT_ADDRESS: string = 'kQAikua1kFzz87wUUQZQSlOReA6vdhiVVZI2yMiMwoErZGxq';
 const OFFCHAIN_CONTENT_PREFIX = 0x01;
 
 async function onchainTestScript() {
@@ -27,7 +27,7 @@ async function onchainTestScript() {
         return;
     }
 
-    const nft_content = beginCell().storeStringTail('item_5.json').endCell();
+    const nft_content = beginCell().storeStringTail('newfiletest.json').endCell();
 
     const cell = beginCell().storeAddress(Address.parse(OWNER_ADDRESS)).storeRef(nft_content).endCell();
 
