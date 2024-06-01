@@ -99,7 +99,7 @@ int workchain() asm "0 PUSHINT";
     
   
     if (op == 1) { ;; deploy new nft
-        throw_unless(101, msg_value == const::subscr);
+        ;; throw_unless(101, msg_value == const::subscr);
         int item_index = in_msg_body~load_uint(64);
         throw_unless(402, item_index <= next_item_index);
         var is_last = item_index == next_item_index;

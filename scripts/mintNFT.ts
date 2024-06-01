@@ -38,10 +38,10 @@ async function onchainTestScript() {
         .storeUint(1, 32)
         .storeUint(0, 64)
         .storeUint(5, 64) // item index
-        .storeCoins(toNano('0.03')) // forward amount
+        .storeCoins(toNano('1.2')) // forward amount
         .storeRef(cell)
         .endCell();
-    const tons_to_mint = toNano('0.03');
+    const tons_to_mint = toNano('1.2');
 
     let link =
         `https://app.tonkeeper.com/transfer/` +
