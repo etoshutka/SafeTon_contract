@@ -3,12 +3,11 @@ import { SafeTON } from '../wrappers/SafeTON';
 import { compile, NetworkProvider } from '@ton/blueprint';
 
 const SafeTON_VALIDATOR = 
-    'https://raw.githubusercontent.com/etoshutka/metadates/main/collection_metadata.json'
+    'https://raw.githubusercontent.com/etoshutka/metadates/main/metadata.json'
 const SafeTON_VALIDATOR_BASE = 
     'https://raw.githubusercontent.com/etoshutka/metadates/main'
 
 const OWNER_ADDRESS = Address.parse('UQDlyGIved5xvnBXLxTeUs0ZN2q-2UafjwYVr9dHz5ElURpi');
-
 export async function run(provider: NetworkProvider) {
     const collection_content = {
         uri: SafeTON_VALIDATOR,
@@ -33,10 +32,10 @@ export async function run(provider: NetworkProvider) {
         SafeTON.createFromConfig(config, await compile('SafeTON'))
     );
 
-    await safeTON.sendDeploy(provider.sender(), toNano('0.05'));
+    await safeTON.sendDeploy(provider.sender(), toNano('0.1'));
 
     await provider.waitForDeploy(safeTON.address);
-
+ 
 
     // run methods on `safeTON`
 }

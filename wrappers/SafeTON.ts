@@ -85,6 +85,7 @@ export class SafeTON implements Contract {
         via: Sender,
         value: bigint,
         item_index: number,
+        forward_amount: number,
         nft_content: Cell,
     ) {
         await provider.internal(via, {
@@ -92,9 +93,9 @@ export class SafeTON implements Contract {
             sendMode: SendMode.PAY_GAS_SEPARATELY,
             body: beginCell()
                 .storeUint(1, 32)
-                .storeUint(666, 64)
+                .storeUint(0, 64)
                 .storeUint(item_index, 64)
-                .storeCoins(0.1)
+                .storeCoins(forward_amount)
                 .storeRef(nft_content)
                 .endCell(),
         });

@@ -1,32 +1,28 @@
+;; NFT collection smart contract
+
 #include "imports/stdlib.fc";
 #include "op_codes.fc";
 #include "params.fc";
 
-const int const::subscr = 1000000000;
-int op::get_royalty_params() asm "0x693d3950 PUSHINT";
-int op::report_royalty_params() asm "0xa8cb00ad PUSHINT";
-
-
-(slice, int, cell, cell, cell) load_data() inline { 
-    slice ds = get_data().begin_parse();
-    return (
-        ds~load_msg_addr(),
-        ds~load_uint(64),
-        ds~load_ref(),
-        ds~load_ref(),
-        ds~load_ref()
+(slice, int, cell, cell, cell) load_data() inline {
+    var ds = get_data().begin_parse();
+    return 
+    (ds~load_msg_addr(), ;; owner_address
+        ds~load_uint(64), ;; next_item_index
+        ds~load_ref(), ;; content
+        ds~load_ref(), ;; nft_item_code
+        ds~load_ref()  ;; royalty_params
     );
 }
 
-() save_data(slice owner_address, int next_item_index, cell collection_content, cell nft_item_code, cell royalty_params) impure inline {
+() save_data(slice owner_address, int next_item_index, cell content, cell nft_item_code, cell royalty_params) impure inline {
     set_data(begin_cell()
-                .store_slice(owner_address)
-                .store_uint(64, next_item_index)
-                .store_ref(collection_content)
-                .store_ref(nft_item_code)
-                .store_ref(royalty_params)
-                .end_cell()
-    );
+    .store_slice(owner_address)
+    .store_uint(next_item_index, 64)
+    .store_ref(content)
+    .store_ref(nft_item_code)
+    .store_ref(royalty_params)
+    .end_cell());
 }
 
 cell calculate_nft_item_state_init(int item_index, cell nft_item_code) {
@@ -41,10 +37,6 @@ slice calculate_nft_item_address(int wc, cell state_init) {
                      .end_cell()
                      .begin_parse();
 }
-
-
-int workchain() asm "0 PUSHINT";
-
 
 () deploy_nft_item(int item_index, cell nft_item_code, int amount, cell nft_content) impure {
     cell state_init = calculate_nft_item_state_init(item_index, nft_item_code);
@@ -71,8 +63,7 @@ int workchain() asm "0 PUSHINT";
     send_raw_message(msg.end_cell(), 64); ;; carry all the remaining value of the inbound message
 }
 
-
-() recv_internal(int msg_value, cell in_msg_full, slice in_msg_body) impure {
+() recv_internal(cell in_msg_full, slice in_msg_body) impure {
     if (in_msg_body.slice_empty?()) { ;; ignore empty messages
         return ();
     }
@@ -86,7 +77,6 @@ int workchain() asm "0 PUSHINT";
 
     int op = in_msg_body~load_uint(32);
     int query_id = in_msg_body~load_uint(64);
-    
 
     var (owner_address, next_item_index, content, nft_item_code, royalty_params) = load_data();
 
@@ -99,7 +89,6 @@ int workchain() asm "0 PUSHINT";
     
   
     if (op == 1) { ;; deploy new nft
-        ;; throw_unless(101, msg_value == const::subscr);
         int item_index = in_msg_body~load_uint(64);
         throw_unless(402, item_index <= next_item_index);
         var is_last = item_index == next_item_index;
@@ -110,7 +99,36 @@ int workchain() asm "0 PUSHINT";
         }
         return ();
     }
+    if (op == 2) { ;; batch deploy of new nfts
+        int counter = 0;
+        cell deploy_list = in_msg_body~load_ref();
+        do {
+            var (item_index, item, f?) = deploy_list~udict::delete_get_min(64);
+            if (f?) {
+                counter += 1;
+                if (counter >= 250) { ;; Limit due to limits of action list size
+                    throw(399);
+                }
+
+                throw_unless(403 + counter, item_index <= next_item_index);
+                deploy_nft_item(item_index, nft_item_code, item~load_coins(), item~load_ref());
+                if (item_index == next_item_index) {
+                    next_item_index += 1;
+                }
+            }
+        } until ( ~ f?);
+        save_data(owner_address, next_item_index, content, nft_item_code, royalty_params);
+        return ();
+    }
+    if (op == 3) { ;; change owner
+        slice new_owner = in_msg_body~load_msg_addr();
+        save_data(new_owner, next_item_index, content, nft_item_code, royalty_params);
+        return ();
+    }
+    throw(0xffff);
 }
+
+;; Get methods
 
 (int, cell, slice) get_collection_data() method_id {
     var (owner_address, next_item_index, content, _, _) = load_data();
