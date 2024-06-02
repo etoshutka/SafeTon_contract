@@ -1,4 +1,4 @@
-import { Address, beginCell, Cell, Contract, contractAddress, ContractProvider, Sender, SendMode } from '@ton/core';
+import { Address, beginCell, Cell, Contract, contractAddress, ContractProvider, Sender, SendMode, toNano } from '@ton/core';
 import { config } from 'process';
 
 const OFFCHAIN_CONTENT_PREFIX = 0x01;
@@ -95,7 +95,7 @@ export class SafeTON implements Contract {
                 .storeUint(1, 32)
                 .storeUint(0, 64)
                 .storeUint(item_index, 64)
-                .storeCoins(forward_amount)
+                .storeCoins(toNano(forward_amount))
                 .storeRef(nft_content)
                 .endCell(),
         });
